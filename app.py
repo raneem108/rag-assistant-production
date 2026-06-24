@@ -74,25 +74,7 @@ if prompt := st.chat_input("Ask about Jordanian data protection law..."):
 
 # ── Sidebar ───────────────────────────────────────────────────
 with st.sidebar:
-    st.header("📚 Documents Loaded")
-    st.markdown("""
-    - Personal Data Protection Law No. 24 (2023)
-    - Data Protection Impact Assessment Guidelines
-    - Data Disclosure Regulation (2025)
-    - Official English Translations
-    """)
-
-    st.divider()
-    st.header("💡 Sample Questions")
-    sample_questions = [
-        "What are the rights of data subjects?",
-        "When is a DPIA required?",
-        "What are the penalties for data breaches?",
-        "ما هي حقوق أصحاب البيانات؟",
-        "متى يجب إجراء تقييم أثر حماية البيانات؟"
-    ]
-    for q in sample_questions:
-        st.caption(f"• {q}")
+    
 
     st.divider()
     st.caption("Built by Raneem Abujabal")
