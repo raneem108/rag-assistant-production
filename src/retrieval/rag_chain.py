@@ -34,8 +34,20 @@ Question: {question}
 Answer:"""
 
 def get_vectorstore():
-    """Load the existing ChromaDB vector store."""
+    """
+    Load the ChromaDB vector store.
+    If it doesn't exist yet (e.g. first run on a fresh deployment),
+    build it automatically from the PDFs in data/documents.
+    """
     embeddings = SentenceTransformerEmbeddings(model_name=EMBED_MODEL)
+
+    if not os.path.exists(CHROMA_DIR) or not os.listdir(CHROMA_DIR):
+        print("No existing vector store found. Building one now...")
+        import sys
+        sys.path.insert(0, ".")
+        from src.ingestion.ingest import run_ingestion
+        run_ingestion()
+
     return Chroma(
         persist_directory=CHROMA_DIR,
         embedding_function=embeddings

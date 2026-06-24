@@ -1,5 +1,10 @@
 import streamlit as st
-import requests
+import sys
+import os
+import time
+
+sys.path.insert(0, ".")
+from src.retrieval.rag_chain import ask as rag_ask
 
 # ── Page config ───────────────────────────────────────────────
 st.set_page_config(
@@ -7,11 +12,6 @@ st.set_page_config(
     page_icon="⚖️",
     layout="centered"
 )
-
-# ── API URL ───────────────────────────────────────────────────
-# When running locally the API is on port 8000
-# When deployed we'll update this to the Render URL
-API_URL = "http://localhost:8000"
 
 # ── Header ────────────────────────────────────────────────────
 st.title("⚖️ Jordan Legal RAG Assistant")
@@ -22,8 +22,6 @@ st.markdown(
 st.divider()
 
 # ── Chat history ──────────────────────────────────────────────
-# st.session_state persists data across reruns
-# Without this, chat history disappears on every interaction
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
@@ -39,55 +37,63 @@ for message in st.session_state.messages:
 # ── Chat input ────────────────────────────────────────────────
 if prompt := st.chat_input("Ask about Jordanian data protection law..."):
 
-    # Add user message to history
     st.session_state.messages.append({
         "role": "user",
         "content": prompt
     })
 
-    # Display user message
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    # Call the API
     with st.chat_message("assistant"):
         with st.spinner("Searching legal documents..."):
             try:
-                response = requests.post(
-                    f"{API_URL}/ask",
-                    json={"question": prompt},
-                    timeout=120
-                )
+                start = time.time()
+                result = rag_ask(prompt)
+                response_time = round(time.time() - start, 2)
 
-                if response.status_code == 200:
-                    data = response.json()
-                    answer = data["answer"]
-                    sources = data["sources"]
-                    response_time = data["response_time_seconds"]
+                answer = result["answer"]
+                sources = result["sources"]
 
-                    st.markdown(answer)
+                st.markdown(answer)
 
-                    with st.expander("📄 Sources"):
-                        for source in sources:
-                            st.caption(source)
+                with st.expander("📄 Sources"):
+                    for source in sources:
+                        st.caption(source)
 
-                    st.caption(f"⏱ Response time: {response_time}s")
+                st.caption(f"⏱ Response time: {response_time}s")
 
-                    # Add to history
-                    st.session_state.messages.append({
-                        "role": "assistant",
-                        "content": answer,
-                        "sources": sources
-                    })
+                st.session_state.messages.append({
+                    "role": "assistant",
+                    "content": answer,
+                    "sources": sources
+                })
 
-                else:
-                    st.error(f"API error: {response.status_code}")
+            except Exception as e:
+                st.error(f"Error: {str(e)}")
 
-            except requests.exceptions.ConnectionError:
-                st.error(
-                    "Cannot connect to the API. "
-                    "Make sure the FastAPI server is running on port 8000."
-                )
-            except requests.exceptions.Timeout:
-                st.error("Request timed out. The API is taking too long.")
+# ── Sidebar ───────────────────────────────────────────────────
+with st.sidebar:
+    st.header("📚 Documents Loaded")
+    st.markdown("""
+    - Personal Data Protection Law No. 24 (2023)
+    - Data Protection Impact Assessment Guidelines
+    - Data Disclosure Regulation (2025)
+    - Official English Translations
+    """)
 
+    st.divider()
+    st.header("💡 Sample Questions")
+    sample_questions = [
+        "What are the rights of data subjects?",
+        "When is a DPIA required?",
+        "What are the penalties for data breaches?",
+        "ما هي حقوق أصحاب البيانات؟",
+        "متى يجب إجراء تقييم أثر حماية البيانات؟"
+    ]
+    for q in sample_questions:
+        st.caption(f"• {q}")
+
+    st.divider()
+    st.caption("Built by Raneem Abujabal")
+    st.caption("Powered by Groq LLaMA3 + ChromaDB")
