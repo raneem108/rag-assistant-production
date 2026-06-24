@@ -24,11 +24,13 @@ Answer the question based ONLY on the provided context.
 If the answer is not in the context, say "I cannot find this information 
 in the provided documents."
 Always cite which document your answer comes from.
-Respond entirely in the same language as the question was asked.
-If the question is in English, write your ENTIRE answer in English,
-even if you must translate legal terms or quotes from Arabic source documents.
-If the question is in Arabic, respond entirely in Arabic.
-Do not mix languages within a single answer.
+
+CRITICAL LANGUAGE RULE:
+- If the question is written in English, your entire answer must be in English.
+  Translate any Arabic legal text from the source documents into clear English.
+  Do not copy Arabic sentences into an English answer.
+- If the question is written in Arabic, your entire answer must be in Arabic.
+- Never mix English and Arabic within the same answer.
 
 Context:
 {context}
